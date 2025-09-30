@@ -1,3 +1,7 @@
+"use client"
+
+import type React from "react"
+
 import { useState, useRef, useEffect, useCallback } from "react"
 import {
   type GameState,
@@ -13,7 +17,7 @@ import {
   type Square,
 } from "@/lib/chess-logic"
 import { ChessPiece, FloatingPiece } from "./chess-piece"
-import { PromotionDialog } from "@/components/chess/promotion-dialog"
+import { PromotionDialog } from "./promotion-dialog"
 import { cn } from "@/lib/utils"
 
 interface ChessBoardProps {
@@ -51,6 +55,10 @@ export function ChessBoard({
     from: Square
     to: Square
   } | null>(null)
+
+  const [isDragging, setIsDragging] = useState(false)
+  const dragStartPos = useRef<{ x: number; y: number } | null>(null)
+  const DRAG_THRESHOLD = 5 // pixels to move before considering it a drag
 
   const boardRef = useRef<HTMLDivElement>(null)
   const squareSizeRef = useRef<number>(0)
@@ -98,6 +106,8 @@ export function ChessBoard({
   const handleSquareClick = (square: Square) => {
     if (!interactive) return
 
+    if (isDragging) return
+
     const piece = getPieceAt(gameState, square)
 
     // If a piece is selected and this is a legal move
@@ -128,26 +138,35 @@ export function ChessBoard({
     const clientX = "touches" in e ? e.touches[0].clientX : e.clientX
     const clientY = "touches" in e ? e.touches[0].clientY : e.clientY
 
+    dragStartPos.current = { x: clientX, y: clientY }
+    setIsDragging(false)
+
     setDraggedPiece({
       piece,
       from: square,
       position: { x: clientX, y: clientY },
     })
     setLegalMoves(getLegalMoves(gameState, square))
-    setSelectedSquare(square)
   }
 
   // Handle drag move
   const handleDragMove = useCallback(
     (e: MouseEvent | TouchEvent) => {
-      if (!draggedPiece) return
+      if (!draggedPiece || !dragStartPos.current) return
 
       const clientX = "touches" in e ? e.touches[0].clientX : e.clientX
       const clientY = "touches" in e ? e.touches[0].clientY : e.clientY
 
+      const deltaX = Math.abs(clientX - dragStartPos.current.x)
+      const deltaY = Math.abs(clientY - dragStartPos.current.y)
+
+      if (!isDragging && (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD)) {
+        setIsDragging(true)
+      }
+
       setDraggedPiece((prev) => (prev ? { ...prev, position: { x: clientX, y: clientY } } : null))
     },
-    [draggedPiece],
+    [draggedPiece, isDragging],
   )
 
   // Handle drag end
@@ -158,17 +177,27 @@ export function ChessBoard({
       const clientX = "changedTouches" in e ? e.changedTouches[0].clientX : e.clientX
       const clientY = "changedTouches" in e ? e.changedTouches[0].clientY : e.clientY
 
-      const targetSquare = getSquareFromPosition(clientX, clientY)
+      if (isDragging) {
+        const targetSquare = getSquareFromPosition(clientX, clientY)
 
-      if (targetSquare && legalMoves.includes(targetSquare)) {
-        handleMove(draggedPiece.from, targetSquare)
+        if (targetSquare && legalMoves.includes(targetSquare)) {
+          handleMove(draggedPiece.from, targetSquare)
+          setSelectedSquare(null)
+          setLegalMoves([])
+        } else {
+          setSelectedSquare(null)
+          setLegalMoves([])
+        }
+      } else {
+        setSelectedSquare(draggedPiece.from)
       }
 
       setDraggedPiece(null)
-      setSelectedSquare(null)
-      setLegalMoves([])
+      dragStartPos.current = null
+
+      setTimeout(() => setIsDragging(false), 50)
     },
-    [draggedPiece, legalMoves, getSquareFromPosition],
+    [draggedPiece, legalMoves, getSquareFromPosition, isDragging],
   )
 
   // Set up drag event listeners
