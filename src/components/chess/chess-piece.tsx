@@ -1,21 +1,21 @@
-import type { PieceSymbol, Color } from "chess.js"
-import { cn } from "@/lib/utils"
+import type { PieceSymbol, Color } from "chess.js";
+import { cn } from "@/lib/utils";
 
 type Piece = {
-  type: PieceSymbol
-  color: Color
-}
+  type: PieceSymbol;
+  color: Color;
+};
 
 interface ChessPieceProps {
-  piece: Piece
-  square: string
-  isDragging?: boolean
-  isSelected?: boolean
-  pieceSet?: string
-  onMouseDown?: (e: React.MouseEvent) => void
-  onTouchStart?: (e: React.TouchEvent) => void
-  onClick?: () => void
-  style?: React.CSSProperties
+  piece: Piece;
+  square: string;
+  isDragging?: boolean;
+  isSelected?: boolean;
+  pieceSet?: string;
+  onMouseDown?: (e: React.MouseEvent) => void;
+  onTouchStart?: (e: React.TouchEvent) => void;
+  onClick?: () => void;
+  style?: React.CSSProperties;
 }
 
 export function ChessPiece({
@@ -36,25 +36,25 @@ export function ChessPiece({
     r: "R",
     q: "Q",
     k: "K",
-  }
+  };
 
-  const pieceName = `${piece.color}${pieceMap[piece.type]}`
-  const imageSrc = `/assets/pieces/${pieceSet}/${pieceName}.svg`
+  const pieceName = `${piece.color}${pieceMap[piece.type]}`;
+  const imageSrc = `/assets/pieces/${pieceSet}/${pieceName}.svg`;
 
   return (
     <div
       className={cn(
         "absolute inset-0 flex items-center justify-center cursor-pointer select-none",
         isDragging && "opacity-50",
-        isSelected && "z-10",
+        isSelected && "z-10"
       )}
       onMouseDown={(e) => {
-        e.preventDefault()
-        onMouseDown?.(e)
+        e.preventDefault();
+        onMouseDown?.(e);
       }}
       onTouchStart={(e) => {
-        e.preventDefault()
-        onTouchStart?.(e)
+        e.preventDefault();
+        onTouchStart?.(e);
       }}
       onClick={onClick}
       style={{
@@ -75,18 +75,23 @@ export function ChessPiece({
         }}
       />
     </div>
-  )
+  );
 }
 
 // Floating piece that follows cursor during drag
 interface FloatingPieceProps {
-  piece: Piece
-  position: { x: number; y: number }
-  squareSize: number
-  pieceSet?: string
+  piece: Piece;
+  position: { x: number; y: number };
+  squareSize: number;
+  pieceSet?: string;
 }
 
-export function FloatingPiece({ piece, position, squareSize, pieceSet = "merida" }: FloatingPieceProps) {
+export function FloatingPiece({
+  piece,
+  position,
+  squareSize,
+  pieceSet = "merida",
+}: FloatingPieceProps) {
   const pieceMap: Record<string, string> = {
     p: "P",
     n: "N",
@@ -94,10 +99,10 @@ export function FloatingPiece({ piece, position, squareSize, pieceSet = "merida"
     r: "R",
     q: "Q",
     k: "K",
-  }
+  };
 
-  const pieceName = `${piece.color}${pieceMap[piece.type]}`
-  const imageSrc = `/assets/pieces/${pieceSet}/${pieceName}.svg`
+  const pieceName = `${piece.color}${pieceMap[piece.type]}`;
+  const imageSrc = `/assets/pieces/${pieceSet}/${pieceName}.svg`;
 
   return (
     <div
@@ -122,5 +127,5 @@ export function FloatingPiece({ piece, position, squareSize, pieceSet = "merida"
         }}
       />
     </div>
-  )
+  );
 }
