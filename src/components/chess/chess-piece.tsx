@@ -1,5 +1,3 @@
-import type React from "react"
-
 import type { Piece } from "@/lib/chess-logic"
 import { cn } from "@/lib/utils"
 
@@ -17,7 +15,7 @@ interface ChessPieceProps {
 
 export function ChessPiece({
   piece,
-  square,
+  // square,
   isDragging = false,
   isSelected = false,
   pieceSet = "merida",

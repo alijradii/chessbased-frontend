@@ -339,7 +339,7 @@ function isSquareUnderAttack(state: GameState, square: Square, defendingColor: C
     for (let file = 0; file < 8; file++) {
       const piece = state.board[rank][file]
       if (piece && piece.color === attackingColor) {
-        const fromSquare = indicesToSquare(rank, file)
+        // const fromSquare = indicesToSquare(rank, file)
         const moves = getAttackingMoves(state, rank, file, piece)
         if (moves.some(([r, f]) => r === targetRank && f === targetFile)) {
           return true

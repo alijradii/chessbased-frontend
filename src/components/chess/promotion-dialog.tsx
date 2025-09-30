@@ -1,5 +1,3 @@
-"use client"
-
 import type { Color, PieceType } from "@/lib/chess-logic"
 import { cn } from "@/lib/utils"
 
