@@ -1,14 +1,14 @@
-import type { Color, PieceType } from "@/lib/chess-logic"
+import type { Color, PieceSymbol } from "chess.js"
 import { cn } from "@/lib/utils"
 
 interface PromotionDialogProps {
   color: Color
-  onSelect: (piece: PieceType) => void
+  onSelect: (piece: PieceSymbol) => void
   pieceSet?: string
 }
 
 export function PromotionDialog({ color, onSelect, pieceSet = "merida" }: PromotionDialogProps) {
-  const pieces: PieceType[] = ["q", "r", "b", "n"]
+  const pieces: PieceSymbol[] = ["q", "r", "b", "n"]
 
   const pieceMap: Record<string, string> = {
     q: "Q",

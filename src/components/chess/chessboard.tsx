@@ -3,26 +3,20 @@
 import type React from "react"
 
 import { useState, useRef, useEffect, useCallback } from "react"
-import {
-  type GameState,
-  initializeGame,
-  getLegalMoves,
-  makeMove,
-  getPieceAt,
-  squareToIndices,
-  indicesToSquare,
-  isCheckmate,
-  isStalemate,
-  type PieceType,
-  type Square,
-} from "@/lib/chess-logic"
+import { Chess } from "chess.js"
+import type { Square, PieceSymbol, Color } from "chess.js"
 import { ChessPiece, FloatingPiece } from "./chess-piece"
 import { PromotionDialog } from "./promotion-dialog"
 import { cn } from "@/lib/utils"
 
+interface Piece {
+  type: PieceSymbol
+  color: Color
+}
+
 interface ChessBoardProps {
-  initialState?: GameState
-  onMove?: (state: GameState) => void
+  initialFen?: string
+  onMove?: (fen: string) => void
   pieceSet?: string
   lightSquareColor?: string
   darkSquareColor?: string
@@ -33,7 +27,7 @@ interface ChessBoardProps {
 }
 
 export function ChessBoard({
-  initialState,
+  initialFen,
   onMove,
   pieceSet = "merida",
   lightSquareColor = "#f0d9b5",
@@ -43,11 +37,12 @@ export function ChessBoard({
   flipped = false,
   interactive = true,
 }: ChessBoardProps) {
-  const [gameState, setGameState] = useState<GameState>(initialState || initializeGame())
+  const [chess] = useState(() => new Chess(initialFen))
+  const [boardState, setBoardState] = useState(chess.board())
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null)
   const [legalMoves, setLegalMoves] = useState<Square[]>([])
   const [draggedPiece, setDraggedPiece] = useState<{
-    piece: any
+    piece: Piece
     from: Square
     position: { x: number; y: number }
   } | null>(null)
@@ -55,10 +50,11 @@ export function ChessBoard({
     from: Square
     to: Square
   } | null>(null)
+  const [lastMove, setLastMove] = useState<{ from: Square; to: Square } | null>(null)
 
-  const [isDragging, setIsDragging] = useState(false)
+  const isDraggingRef = useRef(false)
   const dragStartPos = useRef<{ x: number; y: number } | null>(null)
-  const DRAG_THRESHOLD = 5 // pixels to move before considering it a drag
+  const DRAG_THRESHOLD = 5
 
   const boardRef = useRef<HTMLDivElement>(null)
   const squareSizeRef = useRef<number>(0)
@@ -75,6 +71,10 @@ export function ChessBoard({
     window.addEventListener("resize", updateSquareSize)
     return () => window.removeEventListener("resize", updateSquareSize)
   }, [])
+
+  const indicesToSquare = (rank: number, file: number): Square => {
+    return (String.fromCharCode(97 + file) + (8 - rank)) as Square
+  }
 
   // Get square from mouse/touch position
   const getSquareFromPosition = useCallback(
@@ -102,13 +102,18 @@ export function ChessBoard({
     [flipped],
   )
 
+  const getLegalMovesForSquare = (square: Square): Square[] => {
+    const moves = chess.moves({ square, verbose: true })
+    return moves.map((move) => move.to)
+  }
+
   // Handle piece selection (click)
   const handleSquareClick = (square: Square) => {
     if (!interactive) return
 
-    if (isDragging) return
+    if (isDraggingRef.current) return
 
-    const piece = getPieceAt(gameState, square)
+    const piece = chess.get(square)
 
     // If a piece is selected and this is a legal move
     if (selectedSquare && legalMoves.includes(square)) {
@@ -117,9 +122,9 @@ export function ChessBoard({
       setLegalMoves([])
     }
     // If clicking on own piece, select it
-    else if (piece && piece.color === gameState.turn) {
+    else if (piece && piece.color === chess.turn()) {
       setSelectedSquare(square)
-      setLegalMoves(getLegalMoves(gameState, square))
+      setLegalMoves(getLegalMovesForSquare(square))
     }
     // Deselect
     else {
@@ -132,21 +137,21 @@ export function ChessBoard({
   const handleDragStart = (square: Square, e: React.MouseEvent | React.TouchEvent) => {
     if (!interactive) return
 
-    const piece = getPieceAt(gameState, square)
-    if (!piece || piece.color !== gameState.turn) return
+    const piece = chess.get(square)
+    if (!piece || piece.color !== chess.turn()) return
 
     const clientX = "touches" in e ? e.touches[0].clientX : e.clientX
     const clientY = "touches" in e ? e.touches[0].clientY : e.clientY
 
     dragStartPos.current = { x: clientX, y: clientY }
-    setIsDragging(false)
+    isDraggingRef.current = false
 
     setDraggedPiece({
       piece,
       from: square,
       position: { x: clientX, y: clientY },
     })
-    setLegalMoves(getLegalMoves(gameState, square))
+    setLegalMoves(getLegalMovesForSquare(square))
   }
 
   // Handle drag move
@@ -160,13 +165,13 @@ export function ChessBoard({
       const deltaX = Math.abs(clientX - dragStartPos.current.x)
       const deltaY = Math.abs(clientY - dragStartPos.current.y)
 
-      if (!isDragging && (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD)) {
-        setIsDragging(true)
+      if (!isDraggingRef.current && (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD)) {
+        isDraggingRef.current = true
       }
 
       setDraggedPiece((prev) => (prev ? { ...prev, position: { x: clientX, y: clientY } } : null))
     },
-    [draggedPiece, isDragging],
+    [draggedPiece],
   )
 
   // Handle drag end
@@ -177,17 +182,15 @@ export function ChessBoard({
       const clientX = "changedTouches" in e ? e.changedTouches[0].clientX : e.clientX
       const clientY = "changedTouches" in e ? e.changedTouches[0].clientY : e.clientY
 
-      if (isDragging) {
+      if (isDraggingRef.current) {
         const targetSquare = getSquareFromPosition(clientX, clientY)
 
         if (targetSquare && legalMoves.includes(targetSquare)) {
           handleMove(draggedPiece.from, targetSquare)
-          setSelectedSquare(null)
-          setLegalMoves([])
-        } else {
-          setSelectedSquare(null)
-          setLegalMoves([])
         }
+
+        setSelectedSquare(null)
+        setLegalMoves([])
       } else {
         setSelectedSquare(draggedPiece.from)
       }
@@ -195,9 +198,11 @@ export function ChessBoard({
       setDraggedPiece(null)
       dragStartPos.current = null
 
-      setTimeout(() => setIsDragging(false), 50)
+      setTimeout(() => {
+        isDraggingRef.current = false
+      }, 50)
     },
-    [draggedPiece, legalMoves, getSquareFromPosition, isDragging],
+    [draggedPiece, legalMoves, getSquareFromPosition],
   )
 
   // Set up drag event listeners
@@ -227,12 +232,13 @@ export function ChessBoard({
 
   // Handle move execution
   const handleMove = (from: Square, to: Square) => {
-    const piece = getPieceAt(gameState, from)
+    const piece = chess.get(from)
     if (!piece) return
 
-    // Check if promotion is needed
-    const [toRank] = squareToIndices(to)
-    if (piece.type === "p" && (toRank === 0 || toRank === 7)) {
+    const moves = chess.moves({ square: from, verbose: true })
+    const move = moves.find((m) => m.to === to)
+
+    if (move && move.promotion) {
       setPromotionPending({ from, to })
       return
     }
@@ -240,26 +246,37 @@ export function ChessBoard({
     executeMove(from, to)
   }
 
-  // Execute move with optional promotion
-  const executeMove = (from: Square, to: Square, promotion?: PieceType) => {
-    const newState = makeMove(gameState, from, to, promotion)
-    setGameState(newState)
-    onMove?.(newState)
+  const executeMove = (from: Square, to: Square, promotion?: PieceSymbol) => {
+    try {
+      const move = chess.move({ from, to, promotion })
 
-    // Check game over conditions
-    if (isCheckmate(newState)) {
-      setTimeout(() => {
-        alert(`Checkmate! ${newState.turn === "w" ? "Black" : "White"} wins!`)
-      }, 100)
-    } else if (isStalemate(newState)) {
-      setTimeout(() => {
-        alert("Stalemate! The game is a draw.")
-      }, 100)
+      if (move) {
+        setLastMove({ from: move.from, to: move.to })
+        setBoardState(chess.board())
+        onMove?.(chess.fen())
+
+        // Check game over conditions
+        if (chess.isCheckmate()) {
+          setTimeout(() => {
+            alert(`Checkmate! ${chess.turn() === "w" ? "Black" : "White"} wins!`)
+          }, 100)
+        } else if (chess.isStalemate()) {
+          setTimeout(() => {
+            alert("Stalemate! The game is a draw.")
+          }, 100)
+        } else if (chess.isDraw()) {
+          setTimeout(() => {
+            alert("Draw!")
+          }, 100)
+        }
+      }
+    } catch (error) {
+      console.error("Invalid move:", error)
     }
   }
 
   // Handle promotion selection
-  const handlePromotionSelect = (piece: PieceType) => {
+  const handlePromotionSelect = (piece: PieceSymbol) => {
     if (!promotionPending) return
     executeMove(promotionPending.from, promotionPending.to, piece)
     setPromotionPending(null)
@@ -268,12 +285,11 @@ export function ChessBoard({
   // Render board
   const renderSquare = (rank: number, file: number) => {
     const square = indicesToSquare(rank, file)
-    const piece = getPieceAt(gameState, square)
+    const piece = boardState[rank][file]
     const isLight = (rank + file) % 2 === 0
     const isSelected = selectedSquare === square
     const isLegalMove = legalMoves.includes(square)
-    const isLastMoveSquare =
-      gameState.lastMove && (gameState.lastMove.from === square || gameState.lastMove.to === square)
+    const isLastMoveSquare = lastMove && (lastMove.from === square || lastMove.to === square)
     const isDraggingFromSquare = draggedPiece?.from === square
 
     const displayRank = flipped ? 7 - rank : rank
@@ -346,7 +362,7 @@ export function ChessBoard({
     <>
       <div
         ref={boardRef}
-        className="relative w-full max-w-[90vmin] aspect-square grid grid-cols-8 grid-rows-8 select-none"
+        className="relative w-full aspect-square grid grid-cols-8 grid-rows-8 select-none"
         style={{
           userSelect: "none",
           WebkitUserSelect: "none",
@@ -370,7 +386,7 @@ export function ChessBoard({
       {/* Promotion dialog */}
       {promotionPending && (
         <PromotionDialog
-          color={gameState.turn === "w" ? "b" : "w"}
+          color={chess.turn() === "w" ? "b" : "w"}
           onSelect={handlePromotionSelect}
           pieceSet={pieceSet}
         />

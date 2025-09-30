@@ -5,7 +5,7 @@ import { ChessBoard } from "./components/chess/chessboard";
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <main className="max-h-screen flex items-center justify-center p-4 bg-background">
+      <main className="md:h-screen flex items-center justify-center p-4">
         <div className="w-full max-w-2xl">
           <ChessBoard
             pieceSet="merida"
@@ -13,9 +13,6 @@ function App() {
             darkSquareColor="#b58863"
             highlightColor="rgba(255, 255, 0, 0.4)"
             lastMoveColor="rgba(155, 199, 0, 0.4)"
-            onMove={(state: { lastMove: any; }) => {
-              console.log("Move made:", state.lastMove);
-            }}
           />
          
         </div>
