@@ -1,6 +1,3 @@
-"use client"
-
-import type React from "react"
 import type { PieceSymbol, Color } from "chess.js"
 import { cn } from "@/lib/utils"
 
