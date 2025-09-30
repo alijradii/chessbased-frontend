@@ -44,9 +44,9 @@ export function ChessPiece({
   return (
     <div
       className={cn(
-        "absolute inset-0 flex items-center justify-center cursor-pointer select-none",
+        "absolute inset-0 flex items-center justify-center cursor-pointer select-none z-10",
         isDragging && "opacity-50",
-        isSelected && "z-10"
+        isSelected && "z-50"
       )}
       onMouseDown={(e) => {
         e.preventDefault();
