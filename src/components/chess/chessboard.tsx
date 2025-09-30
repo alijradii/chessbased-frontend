@@ -412,7 +412,7 @@ export function ChessBoard({
       {/* Promotion dialog */}
       {promotionPending && (
         <PromotionDialog
-          color={chess.turn() === "w" ? "b" : "w"}
+          color={chess.turn()}
           onSelect={handlePromotionSelect}
           pieceSet={pieceSet}
         />
