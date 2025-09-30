@@ -5,7 +5,7 @@ import { ChessBoard } from "./components/chess/chessboard";
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <main className="h-screen flex items-center justify-center p-4 bg-background">
+      <main className="max-h-screen flex items-center justify-center p-4 bg-background">
         <div className="w-full max-w-2xl">
           <ChessBoard
             pieceSet="merida"
