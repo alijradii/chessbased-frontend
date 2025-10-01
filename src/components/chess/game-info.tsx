@@ -9,6 +9,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { eventBus } from "@/lib/event-bus";
 import { Input } from "../ui/input";
+import { cn } from "@/lib/utils";
 
 export function GameInfo() {
   const currentFen = useAtomValue(currentFenAtom);
@@ -46,7 +47,11 @@ export function GameInfo() {
 
         <div>
           <h3 className="text-sm font-semibold mb-1">Current FEN</h3>
-          <Input value={currentFen} readOnly className="text-xs font-mono mt-2" />
+          <Input
+            value={currentFen}
+            readOnly
+            className="text-xs font-mono mt-2"
+          />
         </div>
 
         {gameHistory.length > 0 && (
@@ -58,8 +63,11 @@ export function GameInfo() {
                 return (
                   <div
                     key={index}
-                    className="text-xs text-muted-foreground flex items-center gap-1 px-2 py-1 rounded-md 
-                     hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
+                    className={cn(
+                      "text-xs text-muted-foreground flex items-center gap-1 px-2 py-1 rounded-md ",
+                      "hover:bg-muted hover:text-accent-foreground transition-colors cursor-pointer",
+                      `${(historyIndex === index + 1)? "bg-accent": ""}`
+                    )}
                     onClick={() => {
                       eventBus.emit("goToIndex", index + 1);
                     }}
