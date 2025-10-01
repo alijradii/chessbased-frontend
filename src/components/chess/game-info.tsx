@@ -16,7 +16,7 @@ export function GameInfo() {
   const gameStatus = useAtomValue(gameStatusAtom);
 
   return (
-    <Card className="w-full">
+    <Card className="">
       <CardHeader>
         <CardTitle>Game Information</CardTitle>
       </CardHeader>
