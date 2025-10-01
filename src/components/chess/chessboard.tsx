@@ -128,7 +128,7 @@ export function ChessBoard({
       }
     };
 
-     const handleLast = () => {
+    const handleLast = () => {
       if (historyIndex < gameHistory.length) {
         const nextIndex = gameHistory.length;
         const newChess = new Chess();
@@ -137,6 +137,18 @@ export function ChessBoard({
         setHistoryIndex(nextIndex);
 
         const lastMoveInHistory = gameHistory[nextIndex - 1];
+        setLastMove({ from: lastMoveInHistory.from, to: lastMoveInHistory.to });
+      }
+    };
+
+    const handleGoTo = (index: number) => {
+      if (historyIndex < gameHistory.length) {
+        const newChess = new Chess();
+        gameHistory.slice(0, index).forEach((m) => newChess.move(m));
+        setChess(newChess);
+        setHistoryIndex(index);
+
+        const lastMoveInHistory = gameHistory[index - 1];
         setLastMove({ from: lastMoveInHistory.from, to: lastMoveInHistory.to });
       }
     };
@@ -154,6 +166,7 @@ export function ChessBoard({
     eventBus.on("nextMove", handleNext);
     eventBus.on("firstMove", handleFirst);
     eventBus.on("lastMove", handleLast);
+    eventBus.on("goToIndex", handleGoTo);
 
     return () => {
       eventBus.off("setFen", handleSetFen);
@@ -161,6 +174,8 @@ export function ChessBoard({
       eventBus.off("prevMove", handlePrev);
       eventBus.off("nextMove", handleNext);
       eventBus.off("firstMove", handleFirst);
+      eventBus.off("lastMove", handleLast);
+      eventBus.off("goToIndex", handleGoTo);
     };
   }, [chess, gameHistory, historyIndex]);
 
