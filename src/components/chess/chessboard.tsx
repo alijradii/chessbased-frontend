@@ -484,7 +484,7 @@ export function ChessBoard({
     <>
       <div
         ref={boardRef}
-        className="relative w-full max-w-[80vmin] aspect-square grid grid-cols-8 grid-rows-8 select-none"
+        className="relative w-full aspect-square grid grid-cols-8 grid-rows-8 select-none"
         style={{
           userSelect: "none",
           WebkitUserSelect: "none",

@@ -9,7 +9,7 @@ function App() {
     <ThemeProvider>
       <main className="min-h-screen flex items-center justify-center p-4 bg-background">
         <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 flex flex-col items-center">
+          <div className="lg:col-span-2 flex flex-col items-center md:max-w-[80vmin]">
             <ChessBoard
               pieceSet="merida"
               lightSquareColor="#f0d9b5"
@@ -20,7 +20,7 @@ function App() {
                 console.log("Move made, new FEN:", fen);
               }}
             />
-            <div className="mt-4 w-full max-w-[80vmin]">
+            <div className="mt-4 w-full">
               <BoardControls />
             </div>
           </div>
