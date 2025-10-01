@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   RotateCcw,
+  Trash,
 } from "lucide-react";
 
 export function BoardControls() {
@@ -36,15 +37,25 @@ export function BoardControls() {
   const canGoNext = historyIndex < gameHistory.length;
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 w-full">
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={handleReset}
+        title="Reset game"
+        className="flex-1"
+      >
+        <Trash className="h-6 w-6" />
+      </Button>
       <Button
         variant="outline"
         size="icon"
         onClick={handleFirst}
         disabled={!canGoPrev}
         title="Go to start"
+        className="flex-1"
       >
-        <ChevronFirst className="h-4 w-4" />
+        <ChevronFirst className="h-6 w-6" />
       </Button>
       <Button
         variant="outline"
@@ -52,8 +63,9 @@ export function BoardControls() {
         onClick={handlePrev}
         disabled={!canGoPrev}
         title="Previous move"
+        className="flex-1"
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-6 w-6" />
       </Button>
       <Button
         variant="outline"
@@ -61,16 +73,18 @@ export function BoardControls() {
         onClick={handleNext}
         disabled={!canGoNext}
         title="Next move"
+        className="flex-1"
       >
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-6 w-6" />
       </Button>
       <Button
         variant="outline"
         size="icon"
         onClick={handleReset}
         title="Reset game"
+        className="flex-1"
       >
-        <RotateCcw className="h-4 w-4" />
+        <RotateCcw className="h-6 w-6" />
       </Button>
     </div>
   );
