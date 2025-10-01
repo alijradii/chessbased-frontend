@@ -16,7 +16,7 @@ export function GameInfo() {
   const gameStatus = useAtomValue(gameStatusAtom);
 
   return (
-    <Card className="">
+    <Card className="flex-[2] min-h-full">
       <CardHeader>
         <CardTitle>Game Information</CardTitle>
       </CardHeader>
