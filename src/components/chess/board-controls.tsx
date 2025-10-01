@@ -8,6 +8,7 @@ import {
 } from "@/lib/chess-store";
 import {
   ChevronFirst,
+  ChevronLast,
   ChevronLeft,
   ChevronRight,
   RotateCcw,
@@ -31,6 +32,10 @@ export function BoardControls() {
 
   const handleNext = () => {
     eventBus.emit("nextMove");
+  };
+
+  const handleLast = () => {
+    eventBus.emit("lastMove");
   };
 
   const handleReset = () => {
@@ -83,6 +88,16 @@ export function BoardControls() {
         className="flex-1"
       >
         <ChevronRight className="h-6 w-6" />
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={handleLast}
+        disabled={!canGoNext}
+        title="Go to start"
+        className="flex-1"
+      >
+        <ChevronLast className="h-6 w-6" />
       </Button>
       <Button
         variant="outline"

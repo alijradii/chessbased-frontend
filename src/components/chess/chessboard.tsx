@@ -128,6 +128,19 @@ export function ChessBoard({
       }
     };
 
+     const handleLast = () => {
+      if (historyIndex < gameHistory.length) {
+        const nextIndex = gameHistory.length;
+        const newChess = new Chess();
+        gameHistory.slice(0, nextIndex).forEach((m) => newChess.move(m));
+        setChess(newChess);
+        setHistoryIndex(nextIndex);
+
+        const lastMoveInHistory = gameHistory[nextIndex - 1];
+        setLastMove({ from: lastMoveInHistory.from, to: lastMoveInHistory.to });
+      }
+    };
+
     const handleFirst = () => {
       const newChess = new Chess();
       setChess(newChess);
@@ -140,6 +153,7 @@ export function ChessBoard({
     eventBus.on("prevMove", handlePrev);
     eventBus.on("nextMove", handleNext);
     eventBus.on("firstMove", handleFirst);
+    eventBus.on("lastMove", handleLast);
 
     return () => {
       eventBus.off("setFen", handleSetFen);
