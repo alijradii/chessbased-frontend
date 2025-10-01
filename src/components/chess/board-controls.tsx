@@ -52,61 +52,55 @@ export function BoardControls() {
     <div className="flex items-center gap-2 w-full">
       <Button
         variant="outline"
-        size="icon"
         onClick={handleReset}
         title="Reset game"
-        className="flex-1"
+        className="flex-1 h-12"
       >
-        <Trash className="h-6 w-6" />
+        <Trash className="h-12 w-12" />
       </Button>
       <Button
         variant="outline"
-        size="icon"
         onClick={handleFirst}
         disabled={!canGoPrev}
         title="Go to start"
-        className="flex-1"
+        className="flex-1 h-12"
       >
-        <ChevronFirst className="h-6 w-6" />
+        <ChevronFirst className="h-12 w-12" />
       </Button>
       <Button
         variant="outline"
-        size="icon"
         onClick={handlePrev}
         disabled={!canGoPrev}
         title="Previous move"
-        className="flex-1"
+        className="flex-1 h-12"
       >
-        <ChevronLeft className="h-6 w-6" />
+        <ChevronLeft className="h-12 w-12" />
       </Button>
       <Button
         variant="outline"
-        size="icon"
         onClick={handleNext}
         disabled={!canGoNext}
         title="Next move"
-        className="flex-1"
+        className="flex-1 h-12"
       >
-        <ChevronRight className="h-6 w-6" />
+        <ChevronRight className="h-12 w-12" />
       </Button>
       <Button
         variant="outline"
-        size="icon"
         onClick={handleLast}
         disabled={!canGoNext}
         title="Go to start"
-        className="flex-1"
+        className="flex-1 h-12"
       >
-        <ChevronLast className="h-6 w-6" />
+        <ChevronLast className="h-12 w-12" />
       </Button>
       <Button
         variant="outline"
-        size="icon"
         onClick={handleRotate}
         title="Reset game"
-        className="flex-1"
+        className="flex-1 h-12"
       >
-        <RotateCcw className="h-6 w-6" />
+        <RotateCcw className="h-12 w-12" />
       </Button>
     </div>
   );
