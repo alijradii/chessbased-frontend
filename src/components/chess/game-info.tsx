@@ -7,6 +7,7 @@ import {
   gameStatusAtom,
 } from "@/lib/chess-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { eventBus } from "@/lib/event-bus";
 
 export function GameInfo() {
   const currentFen = useAtomValue(currentFenAtom);
@@ -60,6 +61,9 @@ export function GameInfo() {
                     key={index}
                     className="text-xs text-muted-foreground flex items-center gap-1 px-2 py-1 rounded-md 
                      hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
+                    onClick={() => {
+                      eventBus.emit("goToIndex", index + 1);
+                    }}
                   >
                     {isWhiteMove && (
                       <span className="font-semibold mr-1">

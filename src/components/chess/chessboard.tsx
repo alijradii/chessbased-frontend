@@ -142,7 +142,7 @@ export function ChessBoard({
     };
 
     const handleGoTo = (index: number) => {
-      if (historyIndex < gameHistory.length) {
+      if (historyIndex <= gameHistory.length) {
         const newChess = new Chess();
         gameHistory.slice(0, index).forEach((m) => newChess.move(m));
         setChess(newChess);
