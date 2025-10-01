@@ -115,8 +115,12 @@ export function ChessBoard({
       if (historyIndex < gameHistory.length) {
         const nextIndex = historyIndex + 1;
         const temp = new Chess();
-        gameHistory.slice(0, nextIndex).forEach((m) => temp.move(m));
+        
         chess.load(temp.fen());
+
+        gameHistory.slice(0, nextIndex).forEach((m) => temp.move(m));
+        gameHistory.slice(0, nextIndex).forEach((m) => chess.move(m));
+
         setBoardState(chess.board());
         setHistoryIndex(nextIndex);
 
