@@ -1,32 +1,77 @@
+import { useAtomValue } from "jotai";
+import { Button } from "@/components/ui/button";
 import { eventBus } from "@/lib/event-bus";
+import { historyIndexAtom, gameHistoryAtom } from "@/lib/chess-store";
+import {
+  ChevronFirst,
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
+} from "lucide-react";
 
 export function BoardControls() {
+  const historyIndex = useAtomValue(historyIndexAtom);
+  const gameHistory = useAtomValue(gameHistoryAtom);
+
+  const handleFirst = () => {
+    eventBus.emit("firstMove");
+  };
+
+  const handlePrev = () => {
+    eventBus.emit("prevMove");
+  };
+
+  const handleNext = () => {
+    eventBus.emit("nextMove");
+  };
+
+  const handleReset = () => {
+    eventBus.emit(
+      "setFen",
+      "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    );
+  };
+
+  const canGoPrev = historyIndex > 0;
+  const canGoNext = historyIndex < gameHistory.length;
+
   return (
-    <div className="flex gap-2 mt-2">
-      <button
-        onClick={() => eventBus.emit("firstMove")}
-        className="px-2 py-1 bg-card rounded"
+    <div className="flex items-center gap-2">
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={handleFirst}
+        disabled={!canGoPrev}
+        title="Go to start"
       >
-        ⏮ First
-      </button>
-      <button
-        onClick={() => eventBus.emit("prevMove")}
-        className="px-2 py-1 bg-card rounded"
+        <ChevronFirst className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={handlePrev}
+        disabled={!canGoPrev}
+        title="Previous move"
       >
-        ◀ Prev
-      </button>
-      <button
-        onClick={() => eventBus.emit("nextMove")}
-        className="px-2 py-1 bg-card rounded"
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={handleNext}
+        disabled={!canGoNext}
+        title="Next move"
       >
-        Next ▶
-      </button>
-      <button
-        onClick={() => eventBus.emit("makeMove", "d7", "d5")}
-        className="px-2 py-1 bg-card rounded"
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={handleReset}
+        title="Reset game"
       >
-        Test ▶
-      </button>
+        <RotateCcw className="h-4 w-4" />
+      </Button>
     </div>
   );
 }
