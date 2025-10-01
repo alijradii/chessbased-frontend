@@ -8,6 +8,7 @@ import {
 } from "@/lib/chess-store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { eventBus } from "@/lib/event-bus";
+import { Input } from "../ui/input";
 
 export function GameInfo() {
   const currentFen = useAtomValue(currentFenAtom);
@@ -21,7 +22,7 @@ export function GameInfo() {
       <CardHeader>
         <CardTitle>Game Information</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-8">
         <div>
           <h3 className="text-sm font-semibold mb-1">Current Turn</h3>
           <p className="text-sm text-muted-foreground">
@@ -45,9 +46,7 @@ export function GameInfo() {
 
         <div>
           <h3 className="text-sm font-semibold mb-1">Current FEN</h3>
-          <p className="text-xs text-muted-foreground font-mono break-all">
-            {currentFen}
-          </p>
+          <Input value={currentFen} readOnly className="text-xs font-mono mt-2" />
         </div>
 
         {gameHistory.length > 0 && (
