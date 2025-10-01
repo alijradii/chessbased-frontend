@@ -1,6 +1,7 @@
 import { ThemeProvider } from "@/components/theme-provider";
 // import { ModeToggle } from "./components/mode-toggle"
-import { ChessBoard } from "./components/chess/chessboard";
+import { ChessBoard } from "@/components/chess/chessboard";
+import { BoardControls } from "@/components/chess/board-controls";
 
 function App() {
   return (
@@ -14,6 +15,8 @@ function App() {
             highlightColor="rgba(255, 255, 0, 0.4)"
             lastMoveColor="rgba(155, 199, 0, 0.4)"
           />
+
+          <BoardControls />
         </div>
       </main>
     </ThemeProvider>

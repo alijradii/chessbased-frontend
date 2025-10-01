@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Chess } from "chess.js";
-import type { Square, PieceSymbol, Color } from "chess.js";
+import type { Square, PieceSymbol, Color, Move } from "chess.js";
 import { ChessPiece, FloatingPiece } from "./chess-piece";
 import { PromotionDialog } from "./promotion-dialog";
 import { cn } from "@/lib/utils";
+import { eventBus } from "@/lib/event-bus";
 
 interface Piece {
   type: PieceSymbol;
@@ -50,14 +51,102 @@ export function ChessBoard({
     null
   );
 
+  const [gameHistory, setGameHistory] = useState<Move[]>(() =>
+    chess.history({ verbose: true })
+  );
+  const [historyIndex, setHistoryIndex] = useState(
+    () => chess.history({ verbose: true }).length
+  );
+
   const isDraggingRef = useRef(false);
   const dragStartPos = useRef<{ x: number; y: number } | null>(null);
   const DRAG_THRESHOLD = 5;
 
   const boardRef = useRef<HTMLDivElement>(null);
   const squareSizeRef = useRef<number>(0);
+  console.log(chess.history());
 
-  // Calculate square size
+  useEffect(() => {
+    const handleSetFen = (fen: string) => {
+      try {
+        chess.load(fen);
+        setBoardState(chess.board());
+        const newHistory = chess.history({ verbose: true });
+        setGameHistory(newHistory);
+        setHistoryIndex(newHistory.length);
+        setLastMove(null);
+      } catch (err) {
+        console.error("Invalid FEN:", fen, err);
+      }
+    };
+
+    const handleMakeMove = (
+      from: Square,
+      to: Square,
+      promotion?: PieceSymbol
+    ) => {
+      executeMove(from, to, promotion);
+    };
+
+    const handlePrev = () => {
+      if (historyIndex > 0) {
+        const prevIndex = historyIndex - 1;
+        const temp = new Chess();
+        chess.load(temp.fen());
+        gameHistory.slice(0, prevIndex).forEach((m) => temp.move(m));
+        gameHistory.slice(0, prevIndex).forEach((m) => chess.move(m));
+
+        setBoardState(chess.board());
+        setHistoryIndex(prevIndex);
+
+        if (prevIndex > 0) {
+          const lastMoveInHistory = gameHistory[prevIndex - 1];
+          setLastMove({
+            from: lastMoveInHistory.from,
+            to: lastMoveInHistory.to,
+          });
+        } else {
+          setLastMove(null);
+        }
+      }
+    };
+
+    const handleNext = () => {
+      if (historyIndex < gameHistory.length) {
+        const nextIndex = historyIndex + 1;
+        const temp = new Chess();
+        gameHistory.slice(0, nextIndex).forEach((m) => temp.move(m));
+        chess.load(temp.fen());
+        setBoardState(chess.board());
+        setHistoryIndex(nextIndex);
+
+        const lastMoveInHistory = gameHistory[nextIndex - 1];
+        setLastMove({ from: lastMoveInHistory.from, to: lastMoveInHistory.to });
+      }
+    };
+
+    const handleFirst = () => {
+      chess.reset();
+      setBoardState(chess.board());
+      setHistoryIndex(0);
+      setLastMove(null);
+    };
+
+    eventBus.on("setFen", handleSetFen);
+    eventBus.on("makeMove", handleMakeMove);
+    eventBus.on("prevMove", handlePrev);
+    eventBus.on("nextMove", handleNext);
+    eventBus.on("firstMove", handleFirst);
+
+    return () => {
+      eventBus.off("setFen", handleSetFen);
+      eventBus.off("makeMove", handleMakeMove);
+      eventBus.off("prevMove", handlePrev);
+      eventBus.off("nextMove", handleNext);
+      eventBus.off("firstMove", handleFirst);
+    };
+  }, [chess, gameHistory, historyIndex]);
+
   useEffect(() => {
     const updateSquareSize = () => {
       if (boardRef.current) {
@@ -74,7 +163,6 @@ export function ChessBoard({
     return (String.fromCharCode(97 + file) + (8 - rank)) as Square;
   };
 
-  // Get square from mouse/touch position
   const getSquareFromPosition = useCallback(
     (x: number, y: number): Square | null => {
       if (!boardRef.current) return null;
@@ -105,7 +193,6 @@ export function ChessBoard({
     return moves.map((move) => move.to);
   };
 
-  // Handle piece selection (click)
   const handleSquareClick = (square: Square) => {
     if (!interactive) return;
 
@@ -113,25 +200,19 @@ export function ChessBoard({
 
     const piece = chess.get(square);
 
-    // If a piece is selected and this is a legal move
     if (selectedSquare && legalMoves.includes(square)) {
       handleMove(selectedSquare, square);
       setSelectedSquare(null);
       setLegalMoves([]);
-    }
-    // If clicking on own piece, select it
-    else if (piece && piece.color === chess.turn()) {
+    } else if (piece && piece.color === chess.turn()) {
       setSelectedSquare(square);
       setLegalMoves(getLegalMovesForSquare(square));
-    }
-    // Deselect
-    else {
+    } else {
       setSelectedSquare(null);
       setLegalMoves([]);
     }
   };
 
-  // Handle drag start
   const handleDragStart = (
     square: Square,
     e: React.MouseEvent | React.TouchEvent
@@ -155,7 +236,6 @@ export function ChessBoard({
     setLegalMoves(getLegalMovesForSquare(square));
   };
 
-  // Handle drag move
   const handleDragMove = useCallback(
     (e: MouseEvent | TouchEvent) => {
       if (!draggedPiece || !dragStartPos.current) return;
@@ -180,7 +260,6 @@ export function ChessBoard({
     [draggedPiece]
   );
 
-  // Handle drag end
   const handleDragEnd = useCallback(
     (e: MouseEvent | TouchEvent) => {
       if (!draggedPiece) return;
@@ -213,7 +292,6 @@ export function ChessBoard({
     [draggedPiece, legalMoves, getSquareFromPosition]
   );
 
-  // Set up drag event listeners
   useEffect(() => {
     if (!draggedPiece) return;
 
@@ -238,7 +316,6 @@ export function ChessBoard({
     };
   }, [draggedPiece, handleDragMove, handleDragEnd]);
 
-  // Handle move execution
   const handleMove = (from: Square, to: Square) => {
     const piece = chess.get(from);
     if (!piece) return;
@@ -263,7 +340,10 @@ export function ChessBoard({
         setBoardState(chess.board());
         onMove?.(chess.fen());
 
-        // Check game over conditions
+        const newHistory = chess.history({ verbose: true });
+        setGameHistory(newHistory);
+        setHistoryIndex(newHistory.length);
+
         if (chess.isCheckmate()) {
           setTimeout(() => {
             alert(
@@ -285,14 +365,12 @@ export function ChessBoard({
     }
   };
 
-  // Handle promotion selection
   const handlePromotionSelect = (piece: PieceSymbol) => {
     if (!promotionPending) return;
     executeMove(promotionPending.from, promotionPending.to, piece);
     setPromotionPending(null);
   };
 
-  // Render board
   const renderSquare = (rank: number, file: number) => {
     const square = indicesToSquare(rank, file);
     const piece = boardState[rank][file];
@@ -317,7 +395,6 @@ export function ChessBoard({
         }}
         onClick={() => handleSquareClick(square)}
       >
-        {/* Last move highlight */}
         {isLastMoveSquare && (
           <div
             className="absolute inset-0"
@@ -325,7 +402,6 @@ export function ChessBoard({
           />
         )}
 
-        {/* Selection highlight */}
         {isSelected && (
           <div
             className="absolute inset-0"
@@ -333,7 +409,6 @@ export function ChessBoard({
           />
         )}
 
-        {/* Legal move indicator */}
         {isLegalMove && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div
@@ -349,7 +424,6 @@ export function ChessBoard({
           </div>
         )}
 
-        {/* Piece */}
         {piece && !isDraggingFromSquare && (
           <ChessPiece
             piece={piece}
@@ -361,7 +435,6 @@ export function ChessBoard({
           />
         )}
 
-        {/* Coordinate labels */}
         {file === (flipped ? 7 : 0) && (
           <div
             className="absolute left-1 top-1 text-xs font-semibold pointer-events-none select-none"
@@ -399,7 +472,6 @@ export function ChessBoard({
         )}
       </div>
 
-      {/* Floating piece during drag */}
       {draggedPiece && (
         <FloatingPiece
           piece={draggedPiece.piece}
@@ -409,7 +481,6 @@ export function ChessBoard({
         />
       )}
 
-      {/* Promotion dialog */}
       {promotionPending && (
         <PromotionDialog
           color={chess.turn()}
