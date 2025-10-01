@@ -54,7 +54,7 @@ export function BoardControls() {
         variant="outline"
         onClick={handleReset}
         title="Reset game"
-        className="flex-1 h-12"
+        className="flex-1 md:h-12"
       >
         <Trash className="h-12 w-12" />
       </Button>
@@ -63,7 +63,7 @@ export function BoardControls() {
         onClick={handleFirst}
         disabled={!canGoPrev}
         title="Go to start"
-        className="flex-1 h-12"
+        className="flex-1 md:h-12"
       >
         <ChevronFirst className="h-12 w-12" />
       </Button>
@@ -72,7 +72,7 @@ export function BoardControls() {
         onClick={handlePrev}
         disabled={!canGoPrev}
         title="Previous move"
-        className="flex-1 h-12"
+        className="flex-1 md:h-12"
       >
         <ChevronLeft className="h-12 w-12" />
       </Button>
@@ -81,7 +81,7 @@ export function BoardControls() {
         onClick={handleNext}
         disabled={!canGoNext}
         title="Next move"
-        className="flex-1 h-12"
+        className="flex-1 md:h-12"
       >
         <ChevronRight className="h-12 w-12" />
       </Button>
@@ -90,7 +90,7 @@ export function BoardControls() {
         onClick={handleLast}
         disabled={!canGoNext}
         title="Go to start"
-        className="flex-1 h-12"
+        className="flex-1 md:h-12"
       >
         <ChevronLast className="h-12 w-12" />
       </Button>
@@ -98,7 +98,7 @@ export function BoardControls() {
         variant="outline"
         onClick={handleRotate}
         title="Reset game"
-        className="flex-1 h-12"
+        className="flex-1 md:h-12"
       >
         <RotateCcw className="h-12 w-12" />
       </Button>
