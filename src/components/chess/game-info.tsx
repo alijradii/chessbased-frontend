@@ -52,18 +52,24 @@ export function GameInfo() {
         {gameHistory.length > 0 && (
           <div>
             <h3 className="text-sm font-semibold mb-2">Move History</h3>
-            <div className="max-h-40 overflow-y-auto space-y-1">
-              {gameHistory.map((move, index) => (
-                <div
-                  key={index}
-                  className="text-xs text-muted-foreground flex items-center gap-2"
-                >
-                  <span className="font-semibold w-8">
-                    {Math.floor(index / 2) + 1}.
-                  </span>
-                  <span className="font-mono">{move.san}</span>
-                </div>
-              ))}
+            <div className="max-h-40 overflow-y-auto flex flex-wrap gap-2">
+              {gameHistory.map((move, index) => {
+                const isWhiteMove = index % 2 === 0;
+                return (
+                  <div
+                    key={index}
+                    className="text-xs text-muted-foreground flex items-center gap-1 px-2 py-1 rounded-md 
+                     hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
+                  >
+                    {isWhiteMove && (
+                      <span className="font-semibold mr-1">
+                        {Math.floor(index / 2) + 1}.
+                      </span>
+                    )}
+                    <span className="font-mono">{move.san}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
