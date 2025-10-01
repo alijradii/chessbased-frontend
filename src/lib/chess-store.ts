@@ -23,6 +23,8 @@ export interface LastMove {
   to: Square
 }
 
+export const isBoardFlippedAtom = atom<boolean>(false);
+
 // Core chess game instance
 export const chessGameAtom = atom<Chess>(new Chess())
 

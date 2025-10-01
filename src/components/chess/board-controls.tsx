@@ -1,7 +1,11 @@
-import { useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { Button } from "@/components/ui/button";
 import { eventBus } from "@/lib/event-bus";
-import { historyIndexAtom, gameHistoryAtom } from "@/lib/chess-store";
+import {
+  historyIndexAtom,
+  gameHistoryAtom,
+  isBoardFlippedAtom,
+} from "@/lib/chess-store";
 import {
   ChevronFirst,
   ChevronLeft,
@@ -13,7 +17,10 @@ import {
 export function BoardControls() {
   const historyIndex = useAtomValue(historyIndexAtom);
   const gameHistory = useAtomValue(gameHistoryAtom);
-
+  const [flipped, setFlipped] = useAtom(isBoardFlippedAtom);
+  const handleRotate = () => {
+    setFlipped(!flipped);
+  };
   const handleFirst = () => {
     eventBus.emit("firstMove");
   };
@@ -80,7 +87,7 @@ export function BoardControls() {
       <Button
         variant="outline"
         size="icon"
-        onClick={handleReset}
+        onClick={handleRotate}
         title="Reset game"
         className="flex-1"
       >
