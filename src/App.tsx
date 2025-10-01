@@ -8,7 +8,7 @@ function App() {
   return (
     <ThemeProvider>
       <main className="min-h-screen flex items-center justify-center p-4 bg-background w-screen">
-        <div className="w-full h-full flex items-stretch justify-center gap-6">
+        <div className="w-full h-full flex flex-col-reverse md:flex-row md:items-stretch justify-center gap-6">
           <GameInfo />
           <div className="flex-[3] flex flex-col items-center md:max-w-[80vmin]">
             <ChessBoard
