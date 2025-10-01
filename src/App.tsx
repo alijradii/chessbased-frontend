@@ -25,7 +25,6 @@ function App() {
               <BoardControls />
             </div>
           </div>
-          <GameInfo />
         </div>
       </main>
     </ThemeProvider>
