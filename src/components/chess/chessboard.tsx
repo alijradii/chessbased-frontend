@@ -17,7 +17,6 @@ import {
   gameHistoryAtom,
   historyIndexAtom,
   currentTurnAtom,
-  gameStatusAtom,
   isBoardFlippedAtom,
 } from "@/lib/chess-store";
 
@@ -53,7 +52,6 @@ export function ChessBoard({
   const [historyIndex, setHistoryIndex] = useAtom(historyIndexAtom);
   const currentTurn = useAtomValue(currentTurnAtom);
   const flipped = useAtomValue(isBoardFlippedAtom);
-  const gameStatus = useAtomValue(gameStatusAtom);
 
   const isDraggingRef = useRef(false);
   const dragStartPos = useRef<{ x: number; y: number } | null>(null);
