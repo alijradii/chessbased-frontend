@@ -20,7 +20,7 @@ function App() {
                 console.log("Move made, new FEN:", fen);
               }}
             />
-            <div className="mt-4 w-full max-w-[90vmin]">
+            <div className="mt-4 w-full max-w-[80vmin]">
               <BoardControls />
             </div>
           </div>
