@@ -1,11 +1,18 @@
 import { Chess } from "chess.js";
 
+export interface VerboseMove {
+  from: string;
+  to: string;
+  promotion?: string;
+}
+
 export interface EngineEvaluation {
   score: number; // in centipawns
   mate?: number; // moves to mate
   depth: number;
   bestMove?: string;
-  pv?: string[]; // principal variation in SAN with unicode
+  pv?: string[];
+  verboseMoves: VerboseMove[];
 }
 
 export interface MultiPVLine {
@@ -13,7 +20,8 @@ export interface MultiPVLine {
   score: number;
   mate?: number;
   depth: number;
-  pv: string[]; // SAN moves with unicode
+  pv: string[];
+  verboseMoves: VerboseMove[];
 }
 
 const pieceUnicode: Record<string, string> = {
@@ -84,15 +92,17 @@ export class StockfishEngine {
 
     if (!depthMatch || !scoreMatch || !pvMatch) return;
 
+    const chess = new Chess(fen);
+
     const depth = Number(depthMatch[1]);
     const scoreType = scoreMatch[1];
-    const scoreValue = Number(scoreMatch[2]);
+    const scoreValue = (chess.turn() === "w" ? 1 : -1) * Number(scoreMatch[2]);
+
     const pvMoves = pvMatch[1].trim().split(/\s+/).slice(13);
     const multipv = multiPVMatch ? Number(multiPVMatch[1]) : 1;
 
-    // Initialize chess position from the current FEN
-    const chess = new Chess(fen);
     const sanMoves: string[] = [];
+    const verboseMoves: VerboseMove[] = [];
     let bestMove = "";
 
     for (const uci of pvMoves) {
@@ -102,9 +112,20 @@ export class StockfishEngine {
         promotion: uci[4] || undefined,
       });
       if (!move) break;
-      const pieceSymbol = move.piece ? pieceUnicode[move.piece.toLowerCase()] : "";
-      const san = move.san.replace(/[PNBRQK]/i, pieceSymbol);
+
+      // Only replace non-pawn pieces with Unicode
+      let san = move.san;
+      for (const [letter, symbol] of Object.entries(pieceUnicode)) {
+        const regex = new RegExp(letter.toUpperCase(), "g");
+        san = san.replace(regex, symbol);
+      }
+
       sanMoves.push(san);
+      verboseMoves.push({
+        from: move.from,
+        to: move.to,
+        promotion: move.promotion,
+      });
       if (!bestMove) bestMove = san;
     }
 
@@ -114,12 +135,15 @@ export class StockfishEngine {
       mate: scoreType === "mate" ? scoreValue : undefined,
       pv: sanMoves,
       bestMove,
+      verboseMoves
     };
 
     this.latestLines[multipv - 1] = lineEval;
 
     if (this.latestLines[0]?.depth && this.evaluationCallback) {
-      this.evaluationCallback([...this.latestLines].filter(Boolean) as MultiPVLine[]);
+      this.evaluationCallback(
+        [...this.latestLines].filter(Boolean) as MultiPVLine[]
+      );
     }
   }
 
