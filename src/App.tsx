@@ -1,8 +1,9 @@
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/theme-provider"
 // import { ModeToggle } from "./components/mode-toggle"
-import { ChessBoard } from "@/components/chess/chessboard";
-import { BoardControls } from "@/components/chess/board-controls";
-import { GameInfo } from "./components/chess/game-info";
+import { ChessBoard } from "@/components/chess/chessboard"
+import { BoardControls } from "@/components/chess/board-controls"
+import { GameInfo } from "@/components/chess/game-info"
+import { EnginePanel } from "@/components/engine/engine-panel"
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
               highlightColor="rgba(255, 255, 0, 0.4)"
               lastMoveColor="rgba(155, 199, 0, 0.4)"
               onMove={(fen) => {
-                console.log("Move made, new FEN:", fen);
+                console.log("Move made, new FEN:", fen)
               }}
             />
             <div className="mt-4 w-full">
@@ -26,9 +27,10 @@ function App() {
             </div>
           </div>
         </div>
+        <EnginePanel />
       </main>
     </ThemeProvider>
-  );
+  )
 }
 
-export default App;
+export default App
