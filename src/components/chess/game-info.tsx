@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { eventBus } from "@/lib/event-bus";
 import { Input } from "../ui/input";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { Button } from "../ui/button";
 
 export function GameInfo() {
   const currentFen = useAtomValue(currentFenAtom);
@@ -17,6 +19,14 @@ export function GameInfo() {
   const historyIndex = useAtomValue(historyIndexAtom);
   const currentTurn = useAtomValue(currentTurnAtom);
   const gameStatus = useAtomValue(gameStatusAtom);
+
+  const [inputFen, setInputFen] = useState(currentFen);
+  const [dirtyFen, setDirtyFen] = useState(false);
+
+  const handleLoadFen = () => {
+    eventBus.emit("setFen", inputFen);
+    setDirtyFen(false);
+  };
 
   return (
     <Card className="flex-[2] min-h-full">
@@ -48,10 +58,18 @@ export function GameInfo() {
         <div>
           <h3 className="text-sm font-semibold mb-1">Current FEN</h3>
           <Input
-            value={currentFen}
-            readOnly
-            className="text-xs font-mono mt-2"
+            value={inputFen}
+            onChange={(e) => {
+              setInputFen(e.target.value);
+              setDirtyFen(true);
+            }}
+            className="text-xs font-mono"
           />
+          {dirtyFen && (
+            <Button variant="secondary" onClick={handleLoadFen}>
+              Load FEN
+            </Button>
+          )}
         </div>
 
         {gameHistory.length > 0 && (
@@ -66,7 +84,7 @@ export function GameInfo() {
                     className={cn(
                       "text-xs text-muted-foreground flex items-center gap-1 px-2 py-1 rounded-md ",
                       "hover:bg-muted hover:text-accent-foreground transition-colors cursor-pointer",
-                      `${(historyIndex === index + 1)? "bg-accent": ""}`
+                      `${historyIndex === index + 1 ? "bg-accent" : ""}`
                     )}
                     onClick={() => {
                       eventBus.emit("goToIndex", index + 1);

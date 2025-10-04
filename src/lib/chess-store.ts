@@ -68,6 +68,8 @@ export const gameStatusAtom = atom((get) => {
   return "playing";
 });
 
+export const initialFenAtom = atom<string>(new Chess().fen());
+
 // Derived atom: current FEN
 export const currentFenAtom = atom((get) => get(chessGameAtom).fen());
 

@@ -18,10 +18,10 @@ import {
   historyIndexAtom,
   currentTurnAtom,
   isBoardFlippedAtom,
+  initialFenAtom,
 } from "@/lib/chess-store";
 
 interface ChessBoardProps {
-  initialFen?: string;
   onMove?: (fen: string) => void;
   pieceSet?: string;
   lightSquareColor?: string;
@@ -32,7 +32,6 @@ interface ChessBoardProps {
 }
 
 export function ChessBoard({
-  initialFen,
   onMove,
   pieceSet = "merida",
   lightSquareColor = "#f0d9b5",
@@ -50,6 +49,8 @@ export function ChessBoard({
   const [lastMove, setLastMove] = useAtom(lastMoveAtom);
   const [gameHistory, setGameHistory] = useAtom(gameHistoryAtom);
   const [historyIndex, setHistoryIndex] = useAtom(historyIndexAtom);
+  const [initialFen, setInitialFen] = useAtom(initialFenAtom);
+
   const currentTurn = useAtomValue(currentTurnAtom);
   const flipped = useAtomValue(isBoardFlippedAtom);
 
@@ -61,22 +62,10 @@ export function ChessBoard({
   const squareSizeRef = useRef<number>(0);
 
   useEffect(() => {
-    if (initialFen) {
-      try {
-        const newChess = new Chess(initialFen);
-        setChess(newChess);
-        setGameHistory(newChess.history({ verbose: true }));
-        setHistoryIndex(newChess.history({ verbose: true }).length);
-      } catch (err) {
-        console.error("Invalid initial FEN:", initialFen, err);
-      }
-    }
-  }, [initialFen]);
-
-  useEffect(() => {
     const handleSetFen = (fen: string) => {
       try {
         const newChess = new Chess(fen);
+        setInitialFen(fen);
         setChess(newChess);
         const newHistory = newChess.history({ verbose: true });
         setGameHistory(newHistory);
@@ -98,7 +87,7 @@ export function ChessBoard({
     const handlePrev = () => {
       if (historyIndex > 0) {
         const prevIndex = historyIndex - 1;
-        const newChess = new Chess();
+        const newChess = new Chess(initialFen);
         gameHistory.slice(0, prevIndex).forEach((m) => newChess.move(m));
         setChess(newChess);
         setHistoryIndex(prevIndex);
@@ -118,7 +107,7 @@ export function ChessBoard({
     const handleNext = () => {
       if (historyIndex < gameHistory.length) {
         const nextIndex = historyIndex + 1;
-        const newChess = new Chess();
+        const newChess = new Chess(initialFen);
         gameHistory.slice(0, nextIndex).forEach((m) => newChess.move(m));
         setChess(newChess);
         setHistoryIndex(nextIndex);
@@ -131,7 +120,7 @@ export function ChessBoard({
     const handleLast = () => {
       if (historyIndex < gameHistory.length) {
         const nextIndex = gameHistory.length;
-        const newChess = new Chess();
+        const newChess = new Chess(initialFen);
         gameHistory.slice(0, nextIndex).forEach((m) => newChess.move(m));
         setChess(newChess);
         setHistoryIndex(nextIndex);
@@ -143,7 +132,7 @@ export function ChessBoard({
 
     const handleGoTo = (index: number) => {
       if (historyIndex <= gameHistory.length) {
-        const newChess = new Chess();
+        const newChess = new Chess(initialFen);
         gameHistory.slice(0, index).forEach((m) => newChess.move(m));
         setChess(newChess);
         setHistoryIndex(index);
@@ -154,7 +143,7 @@ export function ChessBoard({
     };
 
     const handleFirst = () => {
-      const newChess = new Chess();
+      const newChess = new Chess(initialFen);
       setChess(newChess);
       setHistoryIndex(0);
       setLastMove(null);
